@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Clarity Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1828;
+    --surface2: #231f35;
+    --accent: #a78bfa;
+    --accent2: #f472b6;
+    --gold: #fbbf24;
+    --text: #ede9fe;
+    --muted: #a1a1aa;
+    --border: rgba(167,139,250,0.18);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(167,139,250,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(244,114,182,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; position: relative; z-index: 1; }
+
+  /* Header */
+  .hero { text-align: center; padding: 3rem 0 2.5rem; }
+  .hero-tag { display: inline-block; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); border: 1px solid rgba(167,139,250,0.3); padding: 5px 14px; border-radius: 100px; margin-bottom: 1.25rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 600; line-height: 1.2; margin-bottom: 0.75rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 15px; line-height: 1.7; max-width: 460px; margin: 0 auto 2rem; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; }
+  .hero-stat { text-align: center; }
+  .hero-stat strong { display: block; font-size: 20px; font-weight: 500; color: var(--text); }
+  .hero-stat span { font-size: 12px; color: var(--muted); }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 2rem; }
+  .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-label { font-size: 13px; color: var(--muted); }
+  .progress-pct { font-size: 13px; color: var(--accent); font-weight: 500; }
+  .progress-track { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; }
+  .progress-fill { height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* Section card */
+  .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1.25rem; display: none; animation: fadeUp 0.35s ease; }
+  .section-card.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .sec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .sec-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .sec-info h2 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+  .sec-info p { font-size: 13px; color: var(--muted); }
+
+  /* Questions */
+  .question { margin-bottom: 1.5rem; }
+  .q-text { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 10px; }
+  .q-num { color: var(--accent); font-weight: 500; margin-right: 6px; }
+
+  /* Rating */
+  .rating-wrap { }
+  .rating-row { display: flex; gap: 8px; }
+  .r-btn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif; }
+  .r-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.08); }
+  .r-btn.sel { background: rgba(167,139,250,0.15); border-color: var(--accent); color: var(--accent); }
+  .rating-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .rating-labels span { font-size: 11px; color: var(--muted); }
+
+  /* Choices */
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  .c-btn { padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif; font-weight: 400; white-space: nowrap; }
+  .c-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.07); }
+  .c-btn.sel { background: rgba(167,139,250,0.15); border-color: var(--accent); color: var(--accent); }
+
+  /* Nav */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  .nav-step { font-size: 13px; color: var(--muted); }
+  .nav-btns { display: flex; gap: 10px; }
+  .btn { padding: 9px 22px; border-radius: 100px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 400; cursor: pointer; transition: all 0.18s; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); }
+  .btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #0f0e17; font-weight: 500; }
+  .btn.primary:hover { background: #c4b5fd; border-color: #c4b5fd; }
+
+  /* Result */
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; display: none; animation: fadeUp 0.4s ease; }
+  .result-card.active { display: block; }
+  .result-top { text-align: center; margin-bottom: 2rem; }
+  .result-icon { font-size: 40px; margin-bottom: 1rem; }
+  .result-tag { display: inline-block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); border: 1px solid rgba(244,114,182,0.3); padding: 4px 12px; border-radius: 100px; margin-bottom: 0.75rem; }
+  .result-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; margin-bottom: 0.75rem; }
+  .result-desc { font-size: 14px; color: var(--muted); line-height: 1.75; max-width: 480px; margin: 0 auto; }
+  .bars-label { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .bar-row { margin-bottom: 12px; }
+  .bar-meta { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .bar-name { color: var(--text); }
+  .bar-pct { color: var(--muted); }
+  .bar-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; }
+  .bar-fill { height: 5px; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .result-btns { display: flex; gap: 10px; margin-top: 1.75rem; flex-wrap: wrap; }
+  .result-btns .btn { flex: 1; text-align: center; justify-content: center; }
+  .share-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1.5rem; }
+  .share-box p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .share-row { display: flex; gap: 8px; }
+  .share-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+  .copy-btn { padding: 8px 16px; border-radius: 8px; background: rgba(167,139,250,0.15); border: 1px solid var(--accent); color: var(--accent); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.18s; white-space: nowrap; }
+  .copy-btn:hover { background: rgba(167,139,250,0.25); }
+  .copied { color: #34d399 !important; border-color: #34d399 !important; background: rgba(52,211,153,0.1) !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-tag">Career Discovery</div>
+    <h1>Find your <span>true career path</span></h1>
+    <p>50 thoughtful questions across interests, aptitude, personality, and logic — answered in 8 minutes. Get a personalised career match.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><strong>50</strong><span>Questions</span></div>
+      <div class="hero-stat"><strong>9</strong><span>Sections</span></div>
+      <div class="hero-stat"><strong>5</strong><span>Career tracks</span></div>
+      <div class="hero-stat"><strong>8 min</strong><span>Average time</span></div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label" id="prog-label">Section 1 of 9 — Interests</span>
+      <span class="progress-pct" id="prog-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Section 1 -->
+  <div id="sec0" class="section-card active">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(167,139,250,0.15);">💡</div>
+      <div class="sec-info"><h2>Interests</h2><p>Rate each statement 1–5 (1 = strongly dislike, 5 = strongly like)</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">1.</span>I enjoy working with numbers and financial data</div><div class="rating-wrap"><div class="rating-row" id="r0"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">2.</span>I like solving logical puzzles and brain teasers</div><div class="rating-wrap"><div class="rating-row" id="r1"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">3.</span>I am interested in how businesses grow and make profit</div><div class="rating-wrap"><div class="rating-row" id="r2"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">4.</span>I enjoy using computers and learning new software</div><div class="rating-wrap"><div class="rating-row" id="r3"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">5.</span>I like analysing trends — stocks, markets, data</div><div class="rating-wrap"><div class="rating-row" id="r4"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">6.</span>I enjoy leading people or managing teams</div><div class="rating-wrap"><div class="rating-row" id="r5"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">7.</span>I am curious about how apps and websites are built</div><div class="rating-wrap"><div class="rating-row" id="r6"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">8.</span>I like reading about global affairs and economics</div><div class="rating-wrap"><div class="rating-row" id="r7"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">9.</span>I enjoy organising tasks and planning projects</div><div class="rating-wrap"><div class="rating-row" id="r8"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">10.</span>I like finding patterns in data</div><div class="rating-wrap"><div class="rating-row" id="r9"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="nav-row"><span class="nav-step">Section 1 of 9</span><div class="nav-btns"><button class="btn primary" onclick="goNext(0)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 2 -->
+  <div id="sec1" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(52,211,153,0.12);">🧮</div>
+      <div class="sec-info"><h2>Aptitude</h2><p>Choose the option that best describes you</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">11.</span>What comes easiest to you?</div><div class="choices" id="r10"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">12.</span>If given a dataset, what would you do first?</div><div class="choices" id="r11"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">13.</span>Which subject do you perform best in?</div><div class="choices" id="r12"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">14.</span>How do you solve problems?</div><div class="choices" id="r13"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">15.</span>You prefer tasks that are:</div><div class="choices" id="r14"></div></div>
+    <div class="nav-row"><span class="nav-step">Section 2 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(1)">← Back</button><button class="btn primary" onclick="goNext(1)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 3 -->
+  <div id="sec2" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(251,191,36,0.12);">💼</div>
+      <div class="sec-info"><h2>Personality & work style</h2><p>Choose what feels most natural to you</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">16.</span>You prefer working:</div><div class="choices" id="r15"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">17.</span>You like jobs that are:</div><div class="choices" id="r16"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">18.</span>You are more:</div><div class="choices" id="r17"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">19.</span>You prefer communication via:</div><div class="choices" id="r18"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">20.</span>You handle stress by:</div><div class="choices" id="r19"></div></div>
+    <div class="nav-row"><span class="nav-step">Section 3 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(2)">← Back</button><button class="btn primary" onclick="goNext(2)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 4 -->
+  <div id="sec3" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(251,191,36,0.12);">💰</div>
+      <div class="sec-info"><h2>Career motivation</h2><p>What drives your career decisions?</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">21.</span>What matters most in a job?</div><div class="choices" id="r20"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">22.</span>Would you take a risky high-paying job?</div><div class="choices" id="r21"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">23.</span>You prefer:</div><div class="choices" id="r22"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">24.</span>How important is job security to you? (1–5)</div><div class="rating-wrap"><div class="rating-row" id="r23"></div><div class="rating-labels"><span>Not important</span><span>Very important</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">25.</span>Would you relocate for a career?</div><div class="choices" id="r24"></div></div>
+    <div class="nav-row"><span class="nav-step">Section 4 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(3)">← Back</button><button class="btn primary" onclick="goNext(3)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 5 -->
+  <div id="sec4" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(96,165,250,0.12);">💻</div>
+      <div class="sec-info"><h2>Skill-based preferences</h2><p>Rate your excitement for each</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">26.</span>What excites you more?</div><div class="choices" id="r25"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">27.</span>You enjoy Excel and spreadsheet work</div><div class="rating-wrap"><div class="rating-row" id="r26"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">28.</span>You enjoy public speaking</div><div class="rating-wrap"><div class="rating-row" id="r27"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">29.</span>You enjoy solving case studies</div><div class="rating-wrap"><div class="rating-row" id="r28"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">30.</span>You enjoy learning new technologies</div><div class="rating-wrap"><div class="rating-row" id="r29"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="nav-row"><span class="nav-step">Section 5 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(4)">← Back</button><button class="btn primary" onclick="goNext(4)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 6 -->
+  <div id="sec5" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(244,114,182,0.12);">🧩</div>
+      <div class="sec-info"><h2>Logical thinking</h2><p>Pick the best answer for each</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">31.</span>If 2+2=4 and 3+3=6, then 4+4=?</div><div class="choices" id="r30"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">32.</span>Find the odd one out: Stock, Bond, Algorithm, Mutual Fund</div><div class="choices" id="r31"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">33.</span>Complete the pattern: 2, 4, 8, 16, ?</div><div class="choices" id="r32"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">34.</span>If ALL managers are leaders, then:</div><div class="choices" id="r33"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">35.</span>Basic coding logic excites you?</div><div class="choices" id="r34"></div></div>
+    <div class="nav-row"><span class="nav-step">Section 6 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(5)">← Back</button><button class="btn primary" onclick="goNext(5)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 7 -->
+  <div id="sec6" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(52,211,153,0.12);">🌍</div>
+      <div class="sec-info"><h2>Future vision</h2><p>Where do you see yourself?</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">36.</span>Where do you see yourself in your career?</div><div class="choices" id="r35"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">37.</span>Interested in foreign relations or diplomacy</div><div class="rating-wrap"><div class="rating-row" id="r36"></div><div class="rating-labels"><span>Not at all</span><span>Very much</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">38.</span>Interested in startups and entrepreneurship</div><div class="rating-wrap"><div class="rating-row" id="r37"></div><div class="rating-labels"><span>Not at all</span><span>Very much</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">39.</span>Interested in finance — stocks, CA, CS</div><div class="rating-wrap"><div class="rating-row" id="r38"></div><div class="rating-labels"><span>Not at all</span><span>Very much</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">40.</span>Interested in IT or software careers</div><div class="rating-wrap"><div class="rating-row" id="r39"></div><div class="rating-labels"><span>Not at all</span><span>Very much</span></div></div></div>
+    <div class="nav-row"><span class="nav-step">Section 7 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(6)">← Back</button><button class="btn primary" onclick="goNext(6)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 8 -->
+  <div id="sec7" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(167,139,250,0.15);">🎯</div>
+      <div class="sec-info"><h2>Decision making</h2><p>How do you approach choices?</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">41.</span>You make decisions based on:</div><div class="choices" id="r40"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">42.</span>You prefer:</div><div class="choices" id="r41"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">43.</span>You like competition</div><div class="rating-wrap"><div class="rating-row" id="r42"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">44.</span>You are comfortable with uncertainty</div><div class="rating-wrap"><div class="rating-row" id="r43"></div><div class="rating-labels"><span>Not at all</span><span>Very comfortable</span></div></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">45.</span>You like multitasking</div><div class="rating-wrap"><div class="rating-row" id="r44"></div><div class="rating-labels"><span>Strongly dislike</span><span>Strongly like</span></div></div></div>
+    <div class="nav-row"><span class="nav-step">Section 8 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(7)">← Back</button><button class="btn primary" onclick="goNext(7)">Continue →</button></div></div>
+  </div>
+
+  <!-- Section 9 -->
+  <div id="sec8" class="section-card">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:rgba(251,191,36,0.12);">📈</div>
+      <div class="sec-info"><h2>Real-life scenarios</h2><p>What would you naturally do?</p></div>
+    </div>
+    <div class="question"><div class="q-text"><span class="q-num">46.</span>You get ₹1 lakh unexpectedly. You:</div><div class="choices" id="r45"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">47.</span>Your team fails a project. You:</div><div class="choices" id="r46"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">48.</span>You have a free afternoon. You:</div><div class="choices" id="r47"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">49.</span>You prefer:</div><div class="choices" id="r48"></div></div>
+    <div class="question"><div class="q-text"><span class="q-num">50.</span>You want your life to be:</div><div class="choices" id="r49"></div></div>
+    <div class="nav-row"><span class="nav-step">Section 9 of 9</span><div class="nav-btns"><button class="btn" onclick="goPrev(8)">← Back</button><button class="btn primary" onclick="submitSurvey()">See my results ✦</button></div></div>
+  </div>
+
+  <!-- Result -->
+  <div id="result" class="result-card">
+    <div class="result-top">
+      <div class="result-icon" id="res-icon"></div>
+      <div class="result-tag">Your career match</div>
+      <div class="result-title" id="res-title"></div>
+      <div class="result-desc" id="res-desc"></div>
+    </div>
+    <div class="bars-label">Score breakdown</div>
+    <div id="score-bars"></div>
+    <div class="share-box">
+      <p>Share this survey with a friend</p>
+      <div class="share-row">
+        <input class="share-input" id="share-url" readonly value="">
+        <button class="copy-btn" id="copy-btn" onclick="copyLink()">Copy link</button>
+      </div>
+    </div>
+    <div class="result-btns">
+      <button class="btn" onclick="retake()">Retake survey</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+const answers = new Array(50).fill(null);
+
+const questions = [
+  {type:'rating',cat:'finance'},{type:'rating',cat:'logic'},{type:'rating',cat:'management'},{type:'rating',cat:'tech'},{type:'rating',cat:'finance'},
+  {type:'rating',cat:'management'},{type:'rating',cat:'tech'},{type:'rating',cat:'govt'},{type:'rating',cat:'management'},{type:'rating',cat:'logic'},
+  {type:'choice',opts:['Calculations','Writing','Logical reasoning','Communication'],cats:['finance','management','logic','management']},
+  {type:'choice',opts:['Analyse patterns','Ignore it','Visualise it','Summarise in words'],cats:['logic','management','tech','management']},
+  {type:'choice',opts:['Maths','English','Business Studies','Computer Science'],cats:['finance','management','management','tech']},
+  {type:'choice',opts:['Step-by-step logic','Intuitively','Ask others','Trial & error'],cats:['logic','tech','management','tech']},
+  {type:'choice',opts:['Structured','Creative','Interactive','Flexible'],cats:['finance','management','management','tech']},
+  {type:'choice',opts:['Alone','In a team','Both'],cats:['tech','management','management']},
+  {type:'choice',opts:['Stable & secure','High risk, high reward'],cats:['govt','finance']},
+  {type:'choice',opts:['Introverted','Extroverted'],cats:['tech','management']},
+  {type:'choice',opts:['Written','Verbal'],cats:['tech','management']},
+  {type:'choice',opts:['Thinking deeply','Talking to someone','Distracting myself'],cats:['logic','management','management']},
+  {type:'choice',opts:['High salary','Passion','Work-life balance','Prestige'],cats:['finance','management','govt','management']},
+  {type:'choice',opts:['Yes','No'],cats:['finance','govt']},
+  {type:'choice',opts:['Government job','Private sector','My own business'],cats:['govt','finance','management']},
+  {type:'rating',cat:'govt'},
+  {type:'choice',opts:['Yes','No'],cats:['management','govt']},
+  {type:'choice',opts:['Coding a website','Managing accounts','Marketing a product','Leading a team'],cats:['tech','finance','management','management']},
+  {type:'rating',cat:'finance'},{type:'rating',cat:'management'},{type:'rating',cat:'logic'},{type:'rating',cat:'tech'},
+  {type:'choice',opts:['8','16','12'],cats:['logic','logic','logic']},
+  {type:'choice',opts:['Stock','Bond','Algorithm','Mutual Fund'],cats:['finance','finance','tech','finance']},
+  {type:'choice',opts:['18','32','24'],cats:['logic','logic','logic']},
+  {type:'choice',opts:['All leaders are managers','Some leaders are managers','Neither'],cats:['logic','logic','logic']},
+  {type:'choice',opts:['Yes','No'],cats:['tech','management']},
+  {type:'choice',opts:['Corporate career','My own business','Government role','Tech field'],cats:['finance','management','govt','tech']},
+  {type:'rating',cat:'govt'},{type:'rating',cat:'management'},{type:'rating',cat:'finance'},{type:'rating',cat:'tech'},
+  {type:'choice',opts:['Logic & data','Gut & emotions'],cats:['logic','management']},
+  {type:'choice',opts:['Fixed routine','Flexible schedule'],cats:['govt','tech']},
+  {type:'rating',cat:'management'},{type:'rating',cat:'tech'},{type:'rating',cat:'management'},
+  {type:'choice',opts:['Invest it','Spend it','Save it'],cats:['finance','management','govt']},
+  {type:'choice',opts:['Analyse what went wrong','Look for who to blame','Try to move on'],cats:['logic','management','management']},
+  {type:'choice',opts:['Learn a new skill','Relax and recharge','Socialise with friends'],cats:['tech','management','management']},
+  {type:'choice',opts:['Long-term planning','Short-term wins'],cats:['govt','management']},
+  {type:'choice',opts:['Stable','Impactful','Wealthy','Balanced'],cats:['govt','management','finance','management']},
+];
+
+const sectionNames = ['Interests','Aptitude','Personality','Motivation','Skills','Logic','Future vision','Decision making','Scenarios'];
+
+function buildRating(id, qi) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const b = document.createElement('button');
+    b.className = 'r-btn' + (answers[qi] === i ? ' sel' : '');
+    b.textContent = i;
+    b.onclick = () => { answers[qi] = i; buildRating(id, qi); };
+    el.appendChild(b);
+  }
+}
+
+function buildChoice(id, qi, opts) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'c-btn' + (answers[qi] === i ? ' sel' : '');
+    b.textContent = opt;
+    b.onclick = () => { answers[qi] = i; buildChoice(id, qi, opts); };
+    el.appendChild(b);
+  });
+}
+
+const ratingSet = new Set([0,1,2,3,4,5,6,7,8,9,23,26,27,28,29,36,37,38,39,42,43,44]);
+
+function init() {
+  for (let qi = 0; qi < 50; qi++) {
+    if (ratingSet.has(qi)) buildRating('r'+qi, qi);
+    else buildChoice('r'+qi, qi, questions[qi].opts);
+  }
+}
+
+const sectionRanges = [[0,9],[10,14],[15,19],[20,24],[25,29],[30,34],[35,39],[40,44],[45,49]];
+
+function updateProgress(sec) {
+  const pct = Math.round(((sec) / 9) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-label').textContent = 'Section ' + (sec+1) + ' of 9 — ' + (sectionNames[sec] || 'Results');
+}
+
+function goNext(sec) {
+  document.getElementById('sec'+sec).classList.remove('active');
+  document.getElementById('sec'+(sec+1)).classList.add('active');
+  updateProgress(sec+1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goPrev(sec) {
+  document.getElementById('sec'+sec).classList.remove('active');
+  document.getElementById('sec'+(sec-1)).classList.add('active');
+  updateProgress(sec-1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const careers = {
+  finance:{icon:'📊',title:'Finance & investment',desc:'You have strong financial acumen, enjoy numbers, and are drawn to markets and business. Ideal paths include CA, CFA, Investment Banking, or Financial Analysis.',color:'linear-gradient(135deg,#fbbf24,#f59e0b)'},
+  tech:{icon:'💻',title:'Technology & software',desc:'You are genuinely curious about how digital systems work, love logic and new tools. B.Tech, BCA, Full Stack Development, or Data Science are strong fits.',color:'linear-gradient(135deg,#60a5fa,#3b82f6)'},
+  management:{icon:'🚀',title:'Business & management',desc:'You are a natural leader, enjoy planning, communication, and working with people. BBA, MBA, Entrepreneurship, or Product Management would channel your strengths.',color:'linear-gradient(135deg,#a78bfa,#8b5cf6)'},
+  logic:{icon:'🔬',title:'Analytical & research',desc:'You think systematically, solve problems step by step, and enjoy abstract challenges. Business Analysis, Data Science, Research, or Consulting are ideal.',color:'linear-gradient(135deg,#34d399,#10b981)'},
+  govt:{icon:'🏛️',title:'Government & civil services',desc:'You value stability, impact, and public service. UPSC, IFS, IAS, or IES pathways match your long-term, structured thinking and interest in governance.',color:'linear-gradient(135deg,#f472b6,#ec4899)'},
+};
+const barColors = {finance:'#fbbf24',tech:'#60a5fa',management:'#a78bfa',logic:'#34d399',govt:'#f472b6'};
+const barNames = {finance:'Finance',tech:'Technology',management:'Management',logic:'Logic & analysis',govt:'Govt & civil services'};
+
+function submitSurvey() {
+
+  // ✅ Convert answers into readable format
+  const detailedAnswers = answers.map((ans, i) => {
+    const q = questions[i];
+
+    if (ans === null) return "No answer";
+
+    if (q.type === 'rating') {
+      return `${ans}/5`;
+    } else {
+      return q.opts[ans];
+    }
+  });
+
+  // ✅ Send readable data to Flask
+  fetch("/submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      answers: detailedAnswers
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Saved:", data);
+  })
+  .catch(err => {
+    console.error("Error:", err);
+  });
+
+  // ✅ Result calculation (same as before)
+  const scores = {finance:0,tech:0,management:0,logic:0,govt:0};
+
+  answers.forEach((ans, qi) => {
+    if (ans === null) return;
+    const q = questions[qi];
+    if (q.type === 'rating') scores[q.cat] += ans;
+    else scores[q.cats[ans]] += 3;
+  });
+
+  const total = Object.values(scores).reduce((a,b)=>a+b,0) || 1;
+  const winner = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+  const c = careers[winner];
+
+  // ✅ Show result UI
+  document.getElementById('sec8').classList.remove('active');
+  document.getElementById('result').classList.add('active');
+  document.getElementById('res-icon').textContent = c.icon;
+  document.getElementById('res-title').textContent = c.title;
+  document.getElementById('res-desc').textContent = c.desc;
+
+  // ✅ Bars
+  const barsEl = document.getElementById('score-bars');
+  barsEl.innerHTML = '';
+
+  Object.entries(scores).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
+    const pct = Math.round((v/total)*100);
+    barsEl.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-meta">
+          <span class="bar-name">${barNames[k]}</span>
+          <span class="bar-pct">${pct}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:0%;background:${barColors[k]};" data-w="${pct}"></div>
+        </div>
+      </div>`;
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 100);
+
+  // ✅ Progress update
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-pct').textContent = '100%';
+  document.getElementById('prog-label').textContent = 'Complete!';
+
+  document.getElementById('share-url').value = window.location.href;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function copyLink() {
+  const inp = document.getElementById('share-url');
+  inp.select();
+  document.execCommand('copy');
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 2000);
+}
+
+function retake() {
+  answers.fill(null);
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('sec0').classList.add('active');
+  updateProgress(0);
+  init();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
