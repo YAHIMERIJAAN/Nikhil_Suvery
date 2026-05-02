@@ -1,21 +1,54 @@
 from flask import Flask, render_template, request, jsonify
-import csv
-import os
+import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 
-# Home route
+# ✅ Use this path for local
+DB_PATH = "responses.db"
+
+# 🔥 IMPORTANT (for Render deployment)
+# Uncomment this and comment above line when deploying
+# DB_PATH = "/data/responses.db"
+
+
+# ---------------------------
+# ✅ Initialize Database
+# ---------------------------
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            answers TEXT
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+# Run once at startup
+init_db()
+
+
+# ---------------------------
+# ✅ Home Route
+# ---------------------------
 @app.route('/')
 def home():
-    return render_template('Survey.html')   # make sure filename matches exactly
+    return render_template('Survey.html')
 
-# Submit route
+
+# ---------------------------
+# ✅ Submit Route
+# ---------------------------
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
         data = request.get_json()
-
-        # Get answers array from frontend
         answers = data.get("answers")
 
         if not answers:
@@ -24,25 +57,25 @@ def submit():
                 "message": "No answers received"
             }), 400
 
-        print("Received answers:", answers)
+        print("Received:", answers)
 
-        file_name = "responses.csv"
-        file_exists = os.path.isfile(file_name)
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-        # Save to CSV
-        with open(file_name, mode='a', newline='') as file:
-            writer = csv.writer(file)
+        cursor.execute('''
+            INSERT INTO responses (timestamp, answers)
+            VALUES (?, ?)
+        ''', (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            str(answers)
+        ))
 
-            # Write header only once
-            if not file_exists:
-                header = [f"Q{i+1}" for i in range(len(answers))]
-                writer.writerow(header)
-
-            writer.writerow(answers)
+        conn.commit()
+        conn.close()
 
         return jsonify({
             "status": "success",
-            "message": "Data saved successfully"
+            "message": "Saved successfully"
         })
 
     except Exception as e:
@@ -53,6 +86,23 @@ def submit():
         }), 500
 
 
-# Run app
+# ---------------------------
+# ✅ View Responses (for testing/admin)
+# ---------------------------
+@app.route('/responses')
+def view_responses():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM responses ORDER BY id DESC")
+    rows = cursor.fetchall()
+
+    conn.close()
+    return str(rows)
+
+
+# ---------------------------
+# ✅ Run App
+# ---------------------------
 if __name__ == '__main__':
     app.run(debug=True)
