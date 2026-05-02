@@ -1,19 +1,16 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 from datetime import datetime
+import json
+import os
 
 app = Flask(__name__)
 
-# ✅ Use this path for local
-conn = sqlite3.connect(DB_PATH)
-# 🔥 IMPORTANT (for Render deployment)
-# Uncomment this and comment above line when deploying
-# DB_PATH = "/data/responses.db"
+# ✅ Database path (Render-safe)
+DB_PATH = os.path.join(os.getcwd(), "responses.db")
 
 
-# ---------------------------
-# ✅ Initialize Database
-# ---------------------------
+# ✅ Initialize database
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -29,52 +26,51 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Run once at startup
+
+# Run DB setup at startup
 init_db()
 
 
-# ---------------------------
-# ✅ Home Route
-# ---------------------------
+# ✅ Home route
 @app.route('/')
 def home():
     return render_template('Survey.html')
 
 
-# ---------------------------
-# ✅ Submit Route
-# ---------------------------
+# ✅ Submit route
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
         data = request.get_json()
+
+        if not data:
+            return jsonify({"status": "error", "message": "No data received"}), 400
+
         answers = data.get("answers")
 
         if not answers:
-            return jsonify({
-                "status": "error",
-                "message": "No answers received"
-            }), 400
+            return jsonify({"status": "error", "message": "No answers received"}), 400
 
-        print("Received:", answers)
+        print("Received answers:", answers)
 
+        # ✅ Save to SQLite (store as JSON string → readable later)
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute('''
-            INSERT INTO responses (timestamp, answers)
-            VALUES (?, ?)
-        ''', (
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            str(answers)
-        ))
+        cursor.execute(
+            "INSERT INTO responses (timestamp, answers) VALUES (?, ?)",
+            (
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                json.dumps(answers)   # 👈 important improvement
+            )
+        )
 
         conn.commit()
         conn.close()
 
         return jsonify({
             "status": "success",
-            "message": "Saved successfully"
+            "message": "Data saved successfully"
         })
 
     except Exception as e:
@@ -85,9 +81,7 @@ def submit():
         }), 500
 
 
-# ---------------------------
-# ✅ View Responses (for testing/admin)
-# ---------------------------
+# ✅ Optional: View responses in browser (VERY USEFUL)
 @app.route('/responses')
 def view_responses():
     conn = sqlite3.connect(DB_PATH)
@@ -97,14 +91,19 @@ def view_responses():
     rows = cursor.fetchall()
 
     conn.close()
-    return str(rows)
+
+    # Convert JSON string back to list
+    formatted = []
+    for row in rows:
+        formatted.append({
+            "id": row[0],
+            "timestamp": row[1],
+            "answers": json.loads(row[2])
+        })
+
+    return jsonify(formatted)
 
 
-# ---------------------------
-# ✅ Run App
-# ---------------------------
+# ✅ Local run only
 if __name__ == '__main__':
     app.run(debug=True)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
