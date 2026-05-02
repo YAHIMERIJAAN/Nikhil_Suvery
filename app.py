@@ -5,8 +5,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # ✅ Use this path for local
-DB_PATH = "responses.db"
-
+conn = sqlite3.connect(DB_PATH)
 # 🔥 IMPORTANT (for Render deployment)
 # Uncomment this and comment above line when deploying
 # DB_PATH = "/data/responses.db"
